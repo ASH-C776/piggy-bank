@@ -1,0 +1,16 @@
+services:
+  piggy-bank:
+    build: .
+    image: piggy-bank:latest
+    container_name: piggy-bank
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - JWT_SECRET=${JWT_SECRET:-please-change-this-secret-in-production}
+      - PORT=3000
+      - DATA_DIR=/app/data

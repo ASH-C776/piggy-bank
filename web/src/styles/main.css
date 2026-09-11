@@ -1,0 +1,247 @@
+:root {
+  /* 粉色背景渐变 */
+  --bg-gradient: radial-gradient(circle at 20% 10%, #ffd1e3 0%, transparent 50%),
+                  radial-gradient(circle at 80% 90%, #ffc8dd 0%, transparent 50%),
+                  linear-gradient(135deg, #ffe5ec 0%, #ffc8dd 50%, #ffb3d1 100%);
+
+  /* 磨砂玻璃卡片（白色为主，仅轻微透明） */
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-bg-strong: rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-shadow: 0 8px 32px rgba(255, 140, 170, 0.18);
+  --glass-blur: blur(20px) saturate(180%);
+
+  /* 文字色（深色，适配粉色浅背景） */
+  --text-primary: #5a3a4a;
+  --text-secondary: rgba(90, 58, 74, 0.7);
+  --text-muted: rgba(90, 58, 74, 0.5);
+
+  /* 强调色 - 温暖可爱 */
+  --accent-orange: #ffb454;
+  --accent-pink: #ff9bb0;
+  --accent-yellow: #ffd166;
+  --accent-mint: #7ed4b9;
+  --accent-sky: #84c5ff;
+
+  /* 功能色 */
+  --success: #7ed4b9;
+  --danger: #ff7a7a;
+  --warning: #ffd166;
+  --info: #84c5ff;
+
+  /* 圆角 */
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+
+  --font-cute: 'ZCOOL KuaiLe', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  --font-body: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body, #app {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: var(--bg-gradient);
+  background-attachment: fixed;
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6, .title, .cute {
+  font-family: var(--font-cute);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--accent-yellow);
+  text-decoration: none;
+}
+
+/* 磨砂玻璃卡片基类 */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-strong {
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--glass-shadow);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--r-md);
+  font-weight: 600;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.2s, filter 0.15s;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+/* 普通/幽灵按钮悬停时加亮背景；彩色按钮保持自身渐变，避免被玻璃白覆盖导致白底白字 */
+.btn:hover:not(.btn-primary):not(.btn-success):not(.btn-danger) {
+  background: var(--glass-bg-strong);
+}
+
+.btn-primary:hover,
+.btn-success:hover,
+.btn-danger:hover {
+  filter: brightness(1.06);
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.96);
+  filter: brightness(0.9);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-orange), var(--accent-pink));
+  color: #fff;
+  border: none;
+  box-shadow: 0 6px 20px rgba(255, 155, 176, 0.45);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--accent-mint), var(--accent-sky));
+  color: #1a1a2e;
+  border: none;
+  box-shadow: 0 6px 20px rgba(126, 212, 185, 0.35);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--danger), var(--accent-pink));
+  color: #fff;
+  border: none;
+  box-shadow: 0 6px 20px rgba(255, 122, 122, 0.35);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  outline: none;
+  transition: border 0.2s, background 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent-orange);
+  background: var(--glass-bg-strong);
+}
+
+input::placeholder {
+  color: var(--text-muted);
+}
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 20px 16px 100px;
+  }
+}
+
+.scroll-area {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active, .slide-up-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.slide-up-enter-from {
+  transform: translateY(20px);
+  opacity: 0;
+}
+.slide-up-leave-to {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-family: var(--font-cute);
+}
+
+.empty-state .emoji {
+  font-size: 48px;
+  margin-bottom: 12px;
+  display: block;
+}

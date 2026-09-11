@@ -1,0 +1,24 @@
+{
+  "name": "money-jar",
+  "version": "1.2.0",
+  "private": true,
+  "description": "存钱罐 - 家庭积分管理系统",
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev --workspace server",
+    "dev:web": "npm run dev --workspace web",
+    "build": "npm run build --workspace web && npm run build --workspace server",
+    "start": "node server/dist/index.js",
+    "dev": "concurrently -k -n server,web \"npm:dev:server\" \"npm:dev:web\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  },
+  "dependencies": {
+    "@types/ws": "^8.18.1",
+    "ws": "^8.21.3"
+  }
+}
