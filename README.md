@@ -1,8 +1,11 @@
-# 存钱罐 · Piggy Bank
+# 🐷 存钱罐 · Piggy Bank
 
-> 一个面向家庭的自托管积分管理系统。
-> 孩子通过完成日常任务、临时任务赚取积分，用积分兑换奖励或现金；家长负责审核与规则设置。
-> 数据全部保存在本地（SQLite），不上传任何云端。
+> 一个面向家庭的自托管积分管理系统 —— 让孩子在完成任务、赚取积分、兑换奖励的过程中，学会规划与储蓄。
+
+**怎么玩**：孩子完成日常任务，或家长发布的临时任务 → 获得积分 → 用积分在商店兑换商品或现金；
+所有申请由家长审核把关。数据全部保存在本机（SQLite 单文件），**不上传任何云端**。
+
+[功能特性](#功能特性) · [界面预览](#界面预览) · [快速开始](#快速开始docker-部署) · [常见问题](#常见问题)
 
 ---
 
@@ -31,6 +34,30 @@
 - 响应式设计，手机 / 平板 / 电脑均可使用
 - 支持积分兑换比例自定义（如 10 积分 = 1 元）
 - 支持 WebSocket 实时更新（家长端审核数即时刷新）
+
+---
+
+## 界面预览
+
+**孩子端**
+
+<p align="center">
+  <img src="docs/screenshots/02-child-home.jpg" width="250" alt="孩子端 · 首页">
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/01-child-shop.jpg" width="250" alt="孩子端 · 商店">
+</p>
+
+**更多界面**
+
+<p align="center">
+  <img src="docs/screenshots/03-preview.jpg" width="250" alt="界面预览">
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/04-preview.jpg" width="250" alt="界面预览">
+  <br><br>
+  <img src="docs/screenshots/05-preview.jpg" width="250" alt="界面预览">
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/06-preview.jpg" width="250" alt="界面预览">
+</p>
 
 ---
 
