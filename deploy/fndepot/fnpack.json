@@ -1,12 +1,16 @@
 {
   "piggy-bank": {
     "display_name": "存钱罐 · Piggy Bank",
-    "version": "1.3.3",
-    "desc": "家庭儿童积分管理系统。孩子完成任务赚积分，用积分兑换商品或现金，家长审核把关。\n支持日常项打卡、临时任务、手动加减分、积分商城、现金兑换、成长曲线（多孩子按年龄对比）。\n数据全部保存在你自己的 NAS 上，不上传任何云端。",
+    "desc": "家庭儿童积分管理系统。孩子完成任务赚积分，用积分兑换商品或现金，家长审核把关。<br>· 日常项打卡 / 临时任务 / 手动加减分<br>· 积分商城与现金兑换（比例可自定义）<br>· 成长曲线，对照中国儿童生长标准看百分位，支持多孩子按年龄对比<br>· 家长端 / 孩子端分离，数据全部存在你自己的 NAS 上，不上传任何云端<br><br>开源仓库：<a href='https://github.com/ASH-C776/piggy-bank' target='_blank' rel='noopener'>github.com/ASH-C776/piggy-bank</a><br>问题反馈：<a href='https://github.com/ASH-C776/piggy-bank/issues' target='_blank' rel='noopener'>Issues</a>",
+    "description": "家庭儿童积分管理系统。孩子完成任务赚积分，用积分兑换商品或现金，家长审核把关。数据全部存放在你自己的 NAS 上，不上传任何云端。开源仓库：https://github.com/ASH-C776/piggy-bank",
     "labels": "家庭,儿童,教育,积分,工具",
+    "version": "1.3.3",
+    "platform": ["x86"],
     "author": "基耶杰",
-    "author_url": "https://gitee.com/kijeye/piggy-bank",
-    "bug_report_url": "https://gitee.com/kijeye/piggy-bank/issues",
+    "author_url": "https://github.com/ASH-C776",
+    "maintainer": "基耶杰",
+    "maintainer_url": "https://github.com/ASH-C776",
+    "bug_report_url": "https://github.com/ASH-C776/piggy-bank/issues",
     "install_type": "存储空间",
     "size": "0.22",
     "history": {

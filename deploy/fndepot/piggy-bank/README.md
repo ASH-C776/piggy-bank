@@ -82,7 +82,7 @@
 
 ## 开源与反馈
 
-- 源码仓库：[gitee.com/kijeye/piggy-bank](https://gitee.com/kijeye/piggy-bank)
-- 问题反馈：[Issues](https://gitee.com/kijeye/piggy-bank/issues)
+- 源码仓库：[github.com/ASH-C776/piggy-bank](https://github.com/ASH-C776/piggy-bank)（镜像：[gitee.com/kijeye/piggy-bank](https://gitee.com/kijeye/piggy-bank)）
+- 问题反馈：[Issues](https://github.com/ASH-C776/piggy-bank/issues)
 
 本项目采用 **MIT License** 开源，可自由使用、修改、分发（含商业用途），保留版权声明即可。
