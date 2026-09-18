@@ -1,0 +1,48 @@
+{
+  "schema_version": "2",
+  "source_info": {
+    "name": "基耶杰的应用源",
+    "author": "基耶杰",
+    "homepage": "https://github.com/ASH-C776/piggy-bank",
+    "description": "基耶杰维护的飞牛第三方应用源，收录自研开源应用。"
+  },
+  "apps": {
+    "__APPNAME__": {
+      "display_name": "存钱罐 · Piggy Bank",
+      "desc": "家庭儿童积分管理系统。孩子完成任务赚积分，用积分兑换商品或现金，家长审核把关。<br>· 日常项打卡 / 临时任务 / 手动加减分<br>· 积分商城与现金兑换（比例可自定义）<br>· 身高体重成长曲线，对照中国儿童生长标准看百分位，支持多孩子按年龄对比<br>· 家长端 / 孩子端分离，数据全部存在你自己的 NAS 上，不上传任何云端<br><br>开源仓库：<a href='https://github.com/ASH-C776/piggy-bank' target='_blank' rel='noopener'>github.com/ASH-C776/piggy-bank</a><br>问题反馈：<a href='https://github.com/ASH-C776/piggy-bank/issues' target='_blank' rel='noopener'>Issues</a>",
+      "platform": ["x86"],
+      "categories": ["教育学习", "生活服务"],
+      "icon_url": "./piggy-bank/ICON.PNG",
+      "preview_urls": [
+        "./piggy-bank/Preview/01-child-shop.jpg",
+        "./piggy-bank/Preview/02-child-home.jpg",
+        "./piggy-bank/Preview/03-preview.jpg",
+        "./piggy-bank/Preview/04-preview.jpg",
+        "./piggy-bank/Preview/05-preview.jpg",
+        "./piggy-bank/Preview/06-preview.jpg"
+      ],
+      "readme_url": "./piggy-bank/README.md",
+      "bug_report_url": "https://github.com/ASH-C776/piggy-bank/issues",
+      "maintainer": "基耶杰",
+      "maintainer_url": "https://github.com/ASH-C776/piggy-bank",
+      "run_as": "root",
+      "install_type": "",
+      "is_docker": true,
+      "service_port": "3000",
+      "releases": {
+        "__VERSION__": {
+          "changelog": "__CHANGELOG__",
+          "updated_at": "__UPDATED_AT__",
+          "os_min_version": "__OS_MIN_VERSION__",
+          "packages": {
+            "x86": {
+              "download_url": "./piggy-bank/piggy-bank.fpk",
+              "sha256": "__FPK_SHA256__",
+              "size": "__FPK_SIZE__"
+            }
+          }
+        }
+      }
+    }
+  }
+}
