@@ -1,0 +1,44 @@
+# 依赖
+node_modules
+**/node_modules
+
+# 构建产物
+**/dist
+web/dist
+server/dist
+*.tsbuildinfo
+release/*
+!release/*.bat
+*.apk
+*.fpk
+
+# 运行时数据（含真实家庭数据，绝不上传）
+data
+*.db
+*.db-shm
+*.db-wal
+
+# 环境变量与密钥
+.env
+.env.*
+
+# 日志
+*.log
+
+# 编辑器 / AI 工具目录
+# .workbuddy 整体不入库（内部工作日志、评审工具与验收脚手架，均非应用源码）
+.trae
+.workbuddy/
+.vscode
+.idea
+
+# Capacitor / Android 构建产物
+web/android/app/build/
+web/android/build/
+web/android/.gradle/
+web/android/local.properties
+web/android/app/src/main/assets/public/
+
+# 系统文件
+.DS_Store
+Thumbs.db

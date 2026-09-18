@@ -1,0 +1,18 @@
+appname=com.piggybank.app
+version=1.3.3
+display_name=存钱罐
+desc=家庭儿童积分管理。<br>· 日常项打卡、临时任务、手动加减分，家长审核后到账<br>· 积分商城兑换、现金兑换（可设汇率）<br>· 身高体重成长曲线，对照中国儿童生长标准看百分位，支持多孩子按年龄对比<br>· 家长端/孩子端分离，数据存在自己 NAS 上<br><br>默认管理员账号 admin / admin123，安装后请尽快修改；JWT_SECRET 建议在应用设置中自行指定。
+platform=x86
+source=thirdparty
+# 开发/维护者信息（上架审核时按实际填写）
+maintainer=piggybank
+maintainer_url=https://github.com/piggybank
+# 分发者（社区转发打包时填转发者）
+#distributor=
+#distributor_url=
+service_port=3000
+os_min_version=0.9.27
+desktop_uidir=ui
+desktop_applaunchname=com.piggybank.app.main
+# 数据全存在容器卷里，不需要用户授权 NAS 目录
+disable_authorization_path=true

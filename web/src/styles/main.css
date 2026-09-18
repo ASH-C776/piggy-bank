@@ -1,0 +1,532 @@
+/* ============================================================================
+   本地自托管字体（勿删）
+   ----------------------------------------------------------------------------
+   原先经 Google Fonts CDN 引入 'ZCOOL KuaiLe'（中文标题）与 'Quicksand'（拉丁/数字）。
+   该 CDN 在飞牛 NAS 局域网、国内网络、以及 Capacitor 打包的 APK WebView 内一律
+   加载失败且**静默降级**——标题掉回系统中文字体，圆润手写感消失；叠加上全局
+   `h1-h6 { font-weight: 400 }`，回退字体的标题看起来比正文还弱。
+
+   现在改为随站点分发的 woff2（web/public/fonts/），由 scripts/build-fonts.sh 生成：
+     zcool-kuaile.woff2  7053 字符 / 6766 汉字（≈GB2312 全量），837KB，仅 Regular
+     quicksand.woff2      694 字符（纯拉丁，无汉字），49KB，可变字体 wght 300–700
+   两者均整份保留、不做按用字子集化：字体自带的字符集已经就是常用字集，
+   子集化省不下多少体积，却会让**新增文案落到子集外时静默掉字**（标题一个字
+   变系统字体），属于典型的省小钱埋大坑。
+
+   ！family 名刻意沿用原字体名，使 --font-cute / --font-body 的 80+ 处引用无需改动。
+   ！改动字体文件名或路径时，必须同步更新 web/index.html 中的 <link rel="preload">。
+   许可证：SIL OFL 1.1，可商用/嵌入/再分发，文本随文件保留在 web/public/fonts/。
+   ============================================================================ */
+
+/* 中文标题体（装饰性，仅用于标题与 .cute） */
+@font-face {
+  font-family: 'ZCOOL KuaiLe';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/zcool-kuaile.woff2') format('woff2');
+}
+
+/* 拉丁/数字正文体（可变字体，单文件覆盖全部字重） */
+@font-face {
+  font-family: 'Quicksand';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('/fonts/quicksand.woff2') format('woff2');
+}
+
+:root {
+  /* 粉色背景渐变 */
+  --bg-gradient: radial-gradient(circle at 20% 10%, #ffd1e3 0%, transparent 50%),
+                  radial-gradient(circle at 80% 90%, #ffc8dd 0%, transparent 50%),
+                  linear-gradient(135deg, #ffe5ec 0%, #ffc8dd 50%, #ffb3d1 100%);
+
+  /* 磨砂玻璃卡片（白色为主，仅轻微透明） */
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-bg-strong: rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-shadow: 0 8px 32px rgba(255, 140, 170, 0.18);
+  /* 抬升/浮层阴影改用主文字色相（暖褐紫）而非纯黑：纯黑在粉调玻璃上发脏、发重 */
+  --glass-shadow-hover: 0 12px 40px rgba(90, 58, 74, 0.16);
+  --glass-shadow-float: 0 8px 24px rgba(90, 58, 74, 0.18);
+  /* 小控件（分段 tab 选中胶囊等）的抬升阴影，同源替换原先的黑影 */
+  --shadow-pill: 0 4px 12px rgba(90, 58, 74, 0.18);
+  /* 浮层（下拉菜单、气泡）专用：比卡片阴影更深一档才能在内容之上分层，
+     但仍是主文字色相而非纯黑 —— B1 漏掉了一处 `0 12px 40px rgba(0,0,0,.5)`
+     （parent/Shop 的「新增」菜单），B7 收口到这里。 */
+  --shadow-pop: 0 12px 32px rgba(90, 58, 74, 0.24);
+  /* 模糊半径 20px → 12px：backdrop-filter 是移动端最贵的合成操作之一，本项目
+     一屏常有 6–10 张玻璃卡片同时参与模糊。12px 与 20px 在浅色背景上肉眼几乎
+     无差（背景本来就是大面积柔和渐变，没有高频细节可供模糊），但 GPU 采样
+     成本与耗电明显下降。饱和度保持 180% —— 它决定「磨砂」的观感。 */
+  --glass-blur: blur(12px) saturate(180%);
+
+  /* 弹窗遮罩（scrim）。此前 5 处弹窗各写各的：纯黑 0.4 / 0.55 / 0.6 与
+     rgba(26,26,46,0.45) 并存，观感割裂。统一取带蓝紫调的深色而非纯黑 ——
+     与上面把阴影从纯黑换成主文字色相同一个理由：纯黑压在粉调玻璃上发灰发脏。 */
+  --scrim: rgba(26, 26, 46, 0.55);
+
+  /* 文字色（深色，适配粉色浅背景）
+     注意：全部用「实色」而非带 alpha 的写法。alpha 会让最终对比度随底层漂移，
+     而本项目的底层是粉色渐变 + 半透明玻璃卡片的叠加，无法用手算保证达标。
+     实测（.workbuddy/ui-review/contrast.mjs）：白底 / 玻璃卡片@粉底最深处
+       --text-primary   #5a3a4a  9.82:1 / 7.46:1
+       --text-secondary #75505f  6.84:1 / 6.21:1
+       --text-muted     #7d6373  5.38:1 / 4.88:1  ← 辅助说明文字的达标下限 */
+  --text-primary: #5a3a4a;
+  --text-secondary: #75505f;
+  --text-muted: #7d6373;
+
+  /* 强调色 - 温暖可爱（**仅用于装饰**：背景、边框、阴影、进度条、图标底色）
+     绝不能直接做小字号文字色：它们在白底上只有 1.44–1.99:1，几乎看不清。 */
+  --accent-orange: #ffb454;
+  /* 橘红（R3 审核入口的数字角标底色，2026-09-17 加，用户指定色 #f75000）。
+     白字压它只有 3.44:1 —— **低于小字号 4.5:1 的阈值**，是同色相里较亮的一档。
+     这是"用户指定了具体色值"之后的一次取舍，已在验收入口单独登记（不套用 B7 的
+     ≥4.5:1 铁律，但仍守住图形分量 3:1 的下限）；计数同时写在按钮 aria-label 里，
+     读屏用户不依赖肉眼读这个数字。若要达标，同色相等比压暗到 #d44500 即 4.52:1。 */
+  --accent-orange-red: #f75000;
+  --accent-pink: #ff9bb0;
+  --accent-yellow: #ffd166;
+  --accent-mint: #7ed4b9;
+  --accent-sky: #84c5ff;
+  /* 注：R3 审核入口按钮**不再有专属底色 token**。
+     用户最终口径是"跟总览排名框同底色"，而排名框的底色就是上面的 --glass-bg
+     （它本身是半透明的，观感色由"背景 + 模糊 + 叠加比例"共同决定，不存在固定 hex）。
+     所以按钮直接复用 --glass-bg / --glass-blur / --glass-border —— 用同一个 token
+     才是定义上的"同色"；写死一个近似 hex 只会在背景或玻璃参数变化时悄悄跑偏。
+     上一轮为它单造的 --accent-ivory / --accent-ivory-deep 已删除，不留孤儿 token。 */
+
+  /* 文字用强调色：与上面同色相、压暗到白底 >= 5.4:1（均已复算）
+     规则：凡是 color: 一律用 --text-on-*；凡是 background / border-color / box-shadow
+     一律用 --accent-*。这样"颜色"不会再同时承担两种职责。 */
+  --text-on-yellow: #8a6100; /* 5.54:1 */
+  --text-on-orange: #94551a; /* 5.88:1 */
+  --text-on-pink: #b83c68; /* 5.41:1 */
+  --text-on-mint: #14705a; /* 6.01:1 */
+  --text-on-sky: #1a5f9e; /* 6.62:1 */
+  --text-on-red: #b0314a; /* 6.21:1 */
+
+  /* ══════════════════════════════════════════════════════════════════════
+     hero 数字的渐变填充（已压暗到达标）
+     ----------------------------------------------------------------------
+     孩子端首页余额、成长页身高这类「大数字」用渐变填充。原先直接拿装饰色做端点
+     （--accent-yellow→orange 对白底 1.44–1.76:1、--accent-mint→sky 1.75–1.84:1）。
+     56–64px 的大字按 WCAG 只需 3:1，但这两个色系连 2:1 都不到。
+
+     问题是这套色系**天生无法兼顾鲜艳与达标**：压到 3:1 就不再"亮"了。
+     B7 的取舍是**数字以可读为先**，端点压到 3.6–4.9:1。
+     品牌名不在此列 —— 它属于 logotype，WCAG 对 logo / 品牌名明确豁免最小对比度，
+     因此两端 Layout 与登录页的品牌名继续用鲜亮渐变。
+
+     端点实测对白底：warm 3.63:1 / 4.90:1，cool 4.23:1 / 4.62:1。
+     ══════════════════════════════════════════════════════════════════════ */
+  --grad-num-warm-from: #b07d12;
+  --grad-num-warm-to: #a3611a;
+  --grad-num-cool-from: #2b8a6e;
+  --grad-num-cool-to: #2f79b8;
+
+  /* 功能色（同"仅用于装饰"约束：做文字时一律改用 --text-on-*）
+     色值与 --accent-mint / --warning=--accent-yellow / --info=--accent-sky 同源，
+     因此文字色映射为：success→--text-on-mint，warning→--text-on-yellow，
+     info→--text-on-sky，danger→--text-on-red */
+  --success: #7ed4b9;
+  --danger: #ff7a7a;
+  --warning: #ffd166;
+  --info: #84c5ff;
+  /* 兼容别名：--accent-red 曾被引用 11 处却从未定义，导致"退出登录"hover 等失效。
+     这里指向 --danger 而不去改 11 处调用点，是为了压低回归面；后续可逐步收敛。 */
+  --accent-red: var(--danger);
+  /* 加深版红，专供「承载信息的小图形与徽章底色」：
+     --danger(#ff7a7a) 在白底只有 2.53:1 —— 做装饰（进度条、图标底）没问题，
+     但用来画"有新任务"的红点、或做计数徽章的底色就不够了（非文本图形需 3:1，
+     白字压在它上面更需 4.5:1）。#e5484d 对白底 3.91:1，且与原 #ff4444 肉眼几乎同色。
+     计数徽章的白字请配 --text-on-red 作底色（6.21:1）。
+     唯一登记在案的例外是 R3 审核入口的数字角标（用户指定 #f75000，
+     见上面 --accent-orange-red 的注释与验收脚本里的 badgeFloor）。 */
+  --danger-strong: #e5484d;
+
+  /* ══════════════════════════════════════════════════════════════════════
+     圆角阶梯
+     ----------------------------------------------------------------------
+     原先只有 12/16/20/28 四档，却仍有 11 处硬编码绕过（8/9/6/3/10/14/18px）
+     —— 说明四档不够用。这里补齐到能吸收全部既有形状，让"再写裸值"没有理由。
+     --r-full / --r-pill 是两种"形状"档：前者给正圆（宽高相等时），
+     后者给胶囊（宽高不等、要求两端半圆），语义不同不可互换。
+     ══════════════════════════════════════════════════════════════════════ */
+  --r-2xs: 6px; /* 微小：滚动条滑块、图例色块 */
+  --r-xs: 8px; /* 小：状态胶囊、标签、小角标 */
+  --r-sm: 12px; /* 常规小卡、输入框、菜单项 */
+  --r-md: 16px; /* 卡片（主力，36 处引用） */
+  --r-lg: 20px; /* 大卡、弹窗 */
+  --r-xl: 28px; /* 特大卡（孩子端首页主卡） */
+  --r-full: 50%; /* 正圆：头像、圆形按钮 */
+  --r-pill: 999px; /* 胶囊：分段控件、选中态 */
+
+  /* ══════════════════════════════════════════════════════════════════════
+     字号阶梯
+     ----------------------------------------------------------------------
+     原先 25 种取值、无阶梯，其中 11/12/13/14px 四档只差 1px 且语义完全
+     重叠（`.hint` / `.subtitle` 同时出现在 12 与 13 两个值上），
+     视觉上根本分不出层级。现按「相邻档至少差 2px」重建为 13 档。
+
+     命名按语义升级，不按像素：2xs 角标 → xs 辅助 → sm 标签 → md 正文
+     → lg 小标题 → xl 弹窗标题 → 2xl 区块标题 → 3xl 页面标题 → 4xl 金额
+     → 5xl 及以上为展示型（装饰 emoji、hero 数字）。
+     ══════════════════════════════════════════════════════════════════════ */
+  --fs-2xs: 10px; /* 角标、必填胶囊、图表轴标 */
+  --fs-xs: 12px; /* 辅助信息：hint / meta / 状态 / 底部导航标签 */
+  --fs-sm: 14px; /* 表单标签、页面副标题、紧凑列表 */
+  --fs-md: 16px; /* 正文、菜单项、按钮、输入框 */
+  --fs-lg: 18px; /* 小标题、人名 */
+  --fs-xl: 20px; /* 弹窗标题、中号数字 */
+  --fs-2xl: 22px; /* 区块标题、底部导航图标 */
+  --fs-3xl: 26px; /* 页面标题、大号数字 */
+  --fs-4xl: 28px; /* 金额/积分展示 */
+  --fs-5xl: 36px; /* 装饰性 emoji */
+  --fs-6xl: 48px; /* 空状态插画 emoji */
+  --fs-7xl: 56px; /* 成长页 hero 数字 */
+  --fs-8xl: 64px; /* 首页余额数字 */
+
+  /* ══════════════════════════════════════════════════════════════════════
+     间距阶梯
+     ----------------------------------------------------------------------
+     ！本批**只做 token 化，不重排任何既有版式** —— 刻度刻意贴合项目实测
+     节奏（2px 栅格），使每个字面量都能找到同值 token，视觉变化为零。
+     阶梯"收敛"（例如砍到 4/8/12/16/24/32 六档）属于版式重设计，会让
+     30 个页面的 padding/gap 同时变化，必须逐屏走查，另行分批。
+
+     命名后缀即像素值：读代码时不必回头查表。
+     仅 1/3/5/7/9/11/26/30/34px 这些栅格外漂移值被并入相邻档（共 25 处）。
+     ══════════════════════════════════════════════════════════════════════ */
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-16: 16px;
+  --space-18: 18px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-28: 28px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-80: 80px; /* 滚动区底部留白：躲开固定底部导航 */
+  --space-100: 100px; /* 同上，移动端断点下导航更高 */
+
+  /* ══════════════════════════════════════════════════════════════════════
+     动效时长
+     ----------------------------------------------------------------------
+     原先 6 种（0.12/0.15/0.18/0.2/0.25/0.3s）压到 3 档。分档依据是"用户是否
+     需要感知"：fast 用于 hover/按下这类即时反馈，base 是默认过渡，
+     slow 用于面板/列表这类需要看清过程的位移。
+     后两个是**环境动画**（非交互过渡）：登录页光斑漂浮、Dashboard 呼吸脉冲，
+     它们是氛围装饰，不受交互节奏约束，单独成档而不是硬塞进上面三档。
+     ══════════════════════════════════════════════════════════════════════ */
+  --dur-fast: 0.15s; /* hover / active 等即时反馈 */
+  --dur-base: 0.2s; /* 默认过渡 */
+  --dur-slow: 0.3s; /* 面板、列表等需要看清过程的位移 */
+  --dur-pulse: 1.5s; /* 环境动画：呼吸脉冲 */
+  --dur-float: 12s; /* 环境动画：登录页光斑漂浮 */
+
+  --font-cute: 'ZCOOL KuaiLe', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  --font-body: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body, #app {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  /* 纯色兜底：渐变改由下面的 body::before 固定层绘制。
+     假使该层因任何原因未生效，页面也是品牌粉而不是纯白。 */
+  background-color: #ffe5ec;
+  /* 移动端视口适配：100vh 在移动浏览器里等于「地址栏收起时」的高度，
+     地址栏可见时底部会被推出屏幕（本项目两端布局都是 height:100vh + 内部
+     滚动，这会让底部导航看不见）。dvh 跟随实际可见高度。保留 100vh 作为
+     旧浏览器（< Chrome 108 / iOS 15.4）的回退 —— 不支持的单位会被整条丢弃。 */
+  min-height: 100vh;
+  min-height: 100dvh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* 固定背景层
+   ----------------------------------------------------------------------------
+   原先直接写在 body 上：background: var(--bg-gradient) + background-attachment: fixed。
+   该属性在 iOS Safari 与移动端 WebView 上表现不稳（滚动时重绘闪烁、部分版本
+   直接忽略 fixed 导致渐变随内容滚走），且会让背景持续参与滚动合成。
+   改为独立 fixed 层后各平台行为一致，也不再随滚动重绘。
+   ！z-index: -1 是刻意的：它落在「画布背景之上、所有正常流内容之下」，
+     不需要给 content 加层级，也不会挡住任何点击（另有 pointer-events: none 兜底）。 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--bg-gradient);
+}
+
+h1, h2, h3, h4, h5, h6, .title, .cute {
+  font-family: var(--font-cute);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--text-on-orange);
+  text-decoration: none;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   无障碍：键盘焦点可见性
+   --------------------------------------------------------------------------
+   此前全项目 **0 处** :focus-visible，而 input/select/textarea 上还写了
+   outline: none —— 结果是键盘用户 Tab 到按钮/链接/可点击卡片上，只能看到各家
+   浏览器默认轮廓（观感不一），输入框则只剩一个很淡的边框变色。
+
+   统一给 2px 深橙轮廓 + 2px 偏移：
+   - 选 --text-on-orange(#94551a) 而非 --accent-orange：后者在白底只有 1.76:1，
+     作为 3px 细线根本看不见。WCAG 2.2 对非文本对比度要求 3:1，前者白底 5.88:1、
+     最深的粉底上 ≈5:1，两侧都安全。
+   - outline 不占布局、不影响圆角（现代浏览器让 outline 跟随 border-radius），
+     因此这条规则对既有排版是零位移的。
+
+   用 :focus-visible 而不是 :focus 是刻意的：鼠标/触摸点击不该留下轮廓。
+   ══════════════════════════════════════════════════════════════════════════ */
+:focus-visible {
+  outline: 2px solid var(--text-on-orange);
+  outline-offset: 2px;
+}
+
+/* tabindex="-1" 的元素只能被程序化聚焦（Tab 键到不了），本项目里只有弹窗面板
+   用它接住焦点。它不是交互目标，画一圈轮廓只会让每次开弹窗都闪一个框。 */
+[tabindex='-1']:focus-visible {
+  outline: none;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   无障碍：尊重系统「减弱动态效果」
+   --------------------------------------------------------------------------
+   iOS / Android / Windows 都有这个开关（前庭功能障碍用户会因此眩晕）。
+   这里一次性覆盖登录页 12s 光斑漂浮、Dashboard 呼吸脉冲、以及全部过渡动画。
+
+   ！用 0.01ms 而不是 0s：Vue 的 <Transition> / <TransitionGroup> 依赖
+     transitionend / animationend 事件来推进 entering→entered 状态，
+     时长为 0 时部分浏览器不派发事件，元素会卡在过渡中的样式（例如停在
+     opacity:0）而永久不可见。0.01ms 既不可感知，又保证事件照常触发。
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   无障碍：尊重系统「减弱透明度」
+   --------------------------------------------------------------------------
+   目前只有 Safari 18+ / iOS 18+ 会命中，其余浏览器直接忽略本块（安全）。
+   命中时把玻璃降级为不透明实色：不是简单地 blur(0) —— 半透明白底叠在粉色渐变
+   上而不模糊，会变成一块脏兮兮的色斑。这里的色值是「0.8 白叠在最浅粉底」的
+   等价值，观感最接近原设计，但完全可预测、不会再受底层干扰。
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-blur: none;
+    --glass-bg: #fffafb;
+    --glass-bg-strong: #fffcfd;
+  }
+}
+
+/* 磨砂玻璃卡片基类 */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-strong {
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--glass-shadow);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  padding: var(--space-10) var(--space-20);
+  border-radius: var(--r-md);
+  font-weight: 600;
+  transition: transform var(--dur-fast), box-shadow var(--dur-fast), background var(--dur-base), filter var(--dur-fast);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+/* 普通/幽灵按钮悬停时加亮背景；彩色按钮保持自身渐变，避免被玻璃白覆盖导致白底白字 */
+.btn:hover:not(.btn-primary):not(.btn-success):not(.btn-danger) {
+  background: var(--glass-bg-strong);
+}
+
+.btn-primary:hover,
+.btn-success:hover,
+.btn-danger:hover {
+  filter: brightness(1.06);
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.96);
+  filter: brightness(0.9);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-orange), var(--accent-pink));
+  color: #fff;
+  border: none;
+  box-shadow: 0 6px 20px rgba(255, 155, 176, 0.45);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--accent-mint), var(--accent-sky));
+  color: var(--text-primary);
+  border: none;
+  box-shadow: 0 6px 20px rgba(126, 212, 185, 0.35);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--danger), var(--accent-pink));
+  color: #fff;
+  border: none;
+  box-shadow: 0 6px 20px rgba(255, 122, 122, 0.35);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--r-md);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  outline: none;
+  transition: border var(--dur-base), background var(--dur-base);
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent-orange);
+  background: var(--glass-bg-strong);
+}
+
+input::placeholder {
+  color: var(--text-muted);
+}
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-24) var(--space-20) var(--space-80);
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: var(--space-20) var(--space-16) var(--space-100);
+  }
+}
+
+.scroll-area {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(90, 58, 74, 0.24) transparent;
+}
+
+.scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(90, 58, 74, 0.24);
+  border-radius: var(--r-2xs);
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity var(--dur-slow) ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active, .slide-up-leave-active {
+  transition: all var(--dur-slow) cubic-bezier(0.4, 0, 0.2, 1);
+}
+.slide-up-enter-from {
+  transform: translateY(20px);
+  opacity: 0;
+}
+.slide-up-leave-to {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--space-40) var(--space-20);
+  color: var(--text-muted);
+  font-family: var(--font-cute);
+}
+
+.empty-state .emoji {
+  font-size: var(--fs-6xl);
+  margin-bottom: var(--space-12);
+  display: block;
+}

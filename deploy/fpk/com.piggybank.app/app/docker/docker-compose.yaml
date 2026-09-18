@@ -1,0 +1,27 @@
+# 存钱罐 · 飞牛 fpk 容器编排
+#
+# 与仓库根部的 docker-compose.yml 的区别：
+#   1. 没有 build: —— 飞牛安装 fpk 时不会现场构建，镜像必须已存在于本机
+#      （NAS 上执行： docker build -t piggy-bank:<版本号> . ）
+#   2. 数据卷不用宿主机相对路径，挂到飞牛托管的 ${TRIM_PKGVAR}/data
+#      —— 升级/覆盖安装不丢数据，卸载重装也还在
+#   3. container_name 固定为 piggy-bank，cmd/main 靠它检查运行状态，别随手改
+services:
+  piggy-bank:
+    image: piggy-bank:1.3.3
+    container_name: piggy-bank
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATA_DIR=/app/data
+      # 「今日积分」等按本地自然日统计，容器默认 UTC 会导致跨天错位
+      - TZ=Asia/Shanghai
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - JWT_SECRET=${JWT_SECRET:-please-change-this-secret-in-production}
+    volumes:
+      # 飞牛注入的应用数据目录（升级不丢），容器内固定 /app/data
+      - ${TRIM_PKGVAR}/data:/app/data

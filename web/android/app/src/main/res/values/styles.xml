@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:background">@null</item>
+        <!-- ═══ 系统栏配色（1.3.3 回到实色方案）═══
+             1.3.1/1.3.2 试过「透明 + decorFitsSystemWindows(false)」的沉浸式：页面确实能
+             画到系统栏底下，但 MIUI/HyperOS 的窗口动画（开屏、切后台）要为透明栏逐帧
+             多合成一层，掉帧非常明显，手势条改实色也救不回来。
+             结论：**流畅度优先，系统栏一律用实色**，并把默认灰换成与两端页面同族的
+             暖白（#FFFDF8，家长端米白 / 孩子端浅粉都与它衔接，不再是突兀的灰条）。
+             代价是状态栏不再逐页变色；若以后要逐页色，用 @capacitor/status-bar 的
+             setBackgroundColor 按路由改**实色**（同样是快路径），不要回透明方案。
+             浅色栏上图标必须翻深色，否则白图标看不见。 -->
+        <item name="android:statusBarColor">#FFFDF8</item>
+        <item name="android:navigationBarColor">#FFFDF8</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+
+
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="android:background">@drawable/splash</item>
+    </style>
+</resources>

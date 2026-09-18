@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/piggy-bank.png" type="image/png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffe5ec" />
+    <title>存钱罐 · Piggy Bank</title>
+
+    <!-- 字体自托管（web/public/fonts/，源与许可证见 scripts/build-fonts.sh）。
+         原先用 Google Fonts CDN，在 NAS 局域网 / 国内网络 / APK WebView 内均加载失败，
+         标题会静默回退成系统中文字体。preload 让字体与 JS 并行下载，减少字体切换抖动。
+         ！crossorigin 不能省：@font-face 的字体请求走 CORS 模式，缺它会被下载两次。 -->
+    <link rel="preload" href="/fonts/zcool-kuaile.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/quicksand.woff2" as="font" type="font/woff2" crossorigin>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+{
+  ".url": {
+    "com.piggybank.app.main": {
+      "title": "存钱罐",
+      "icon": "images/icon_{0}.png",
+      "type": "iframe",
+      "protocol": "http",
+      "port": "3000",
+      "url": "/",
+      "allUsers": true
+    }
+  }
+}
