@@ -5,13 +5,15 @@ desc=家庭儿童积分管理。<br>· 日常项打卡、临时任务、手动�
 platform=x86
 source=thirdparty
 # 开发/维护者信息（上架审核时按实际填写）
-maintainer=piggybank
-maintainer_url=https://github.com/piggybank
+maintainer=基耶杰
+maintainer_url=https://gitee.com/kijeye/piggy-bank
 # 分发者（社区转发打包时填转发者）
 #distributor=
 #distributor_url=
 service_port=3000
-os_min_version=0.9.27
+os_min_version=1.2.0
+# 更新说明（应用中心更新界面展示，面向用户、保持简洁）
+changelog=新增飞牛 fnOS 应用中心支持；新增成长记录多孩子曲线对比；修复安卓端窗口切换动画掉帧问题。
 desktop_uidir=ui
 desktop_applaunchname=com.piggybank.app.main
 # 数据全存在容器卷里，不需要用户授权 NAS 目录

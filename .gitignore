@@ -32,6 +32,11 @@ data
 .vscode
 .idea
 
+# FnDepot 源仓库的二进制产物（发布时从 fpk 产物与 docs/screenshots 复制过去）
+deploy/fndepot/*/*.fpk
+deploy/fndepot/*/ICON.PNG
+deploy/fndepot/*/Preview/
+
 # Capacitor / Android 构建产物
 web/android/app/build/
 web/android/build/

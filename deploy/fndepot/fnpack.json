@@ -1,0 +1,16 @@
+{
+  "piggy-bank": {
+    "display_name": "存钱罐 · Piggy Bank",
+    "version": "1.3.3",
+    "desc": "家庭儿童积分管理系统。孩子完成任务赚积分，用积分兑换商品或现金，家长审核把关。\n支持日常项打卡、临时任务、手动加减分、积分商城、现金兑换、成长曲线（多孩子按年龄对比）。\n数据全部保存在你自己的 NAS 上，不上传任何云端。",
+    "labels": "家庭,儿童,教育,积分,工具",
+    "author": "基耶杰",
+    "author_url": "https://gitee.com/kijeye/piggy-bank",
+    "bug_report_url": "https://gitee.com/kijeye/piggy-bank/issues",
+    "install_type": "存储空间",
+    "size": "0.22",
+    "history": {
+      "1.3.3": "首个飞牛版本：应用中心一键安装，数据由系统托管、升级不丢。含成长记录多孩子曲线对比、安卓端动画优化。"
+    }
+  }
+}
