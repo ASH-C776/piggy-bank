@@ -38,7 +38,9 @@ case "$IMAGE_LINE" in
 esac
 
 # --- 组装 -------------------------------------------------------------------
-rm -rf "$OUT"
+# 只清理产物、保留 .git（输出目录通常已是一个 git 仓库，直接清空会丢掉远端配置）
+mkdir -p "$OUT"
+rm -rf "$OUT/$APP_NAME" "$OUT/fnpack.json"
 mkdir -p "$OUT/$APP_NAME/Preview"
 
 cp "$SRC_STORE/fnpack.json"                    "$OUT/fnpack.json"
