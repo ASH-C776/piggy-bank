@@ -1,0 +1,48 @@
+# 存钱罐 · 飞牛 fpk 容器编排
+#
+# 与仓库根部的 docker-compose.yml 的区别：
+#   1. 没有 build: —— 飞牛安装 fpk 时不会现场构建，镜像从公共仓库拉取
+#      （镜像地址见下方 image，发布新版本时先 push 再改这里）
+#   2. 数据卷不用宿主机相对路径，挂到飞牛托管的 ${TRIM_PKGVAR}/data
+#      —— 升级/覆盖安装不丢数据，卸载重装也还在
+#   3. container_name 固定为 piggy-bank，cmd/main 靠它检查运行状态，别随手改
+#   4. 额外挂载应用安装目录并启用飞牛「统一网关」（见下方 GATEWAY_* 与第二条挂载）
+#      —— 这是「在飞牛 App 里从外网打开」能成立的前提
+services:
+  piggy-bank:
+    # 1.5.1 镜像由 GitHub Actions 在 push main 后自动构建推送；
+    # 本地出 fpk 骨架时该 tag 尚未存在，安装前需确认镜像已发布（否则拉取失败）。
+    image: ghcr.io/ash-c776/piggy-bank-app:1.5.2
+    container_name: piggy-bank
+    restart: unless-stopped
+    # 保留端口直连：局域网（含 APK 填内网 IP）走这条路，最直接也最快。
+    # 注意这条路在公网上不可达，外网访问靠的是下面的统一网关。
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATA_DIR=/app/data
+      # 「今日积分」等按本地自然日统计，容器默认 UTC 会导致跨天错位
+      - TZ=Asia/Shanghai
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - JWT_SECRET=${JWT_SECRET:-please-change-this-secret-in-production}
+      # ── 飞牛统一网关 ────────────────────────────────────────────────────
+      # app/ui/config 里声明了 gatewayPrefix/gatewaySocket，飞牛会把
+      # /app/piggybank-app/** 的请求（含 WebSocket）校验登录态后转发到下面这个 socket。
+      # 有了它，同一个桌面图标在局域网、FN Connect 外网、域名访问下都能打开；
+      # 而「端口直连」模式在远程时页面是 HTTPS、主机名是飞牛中转域名，
+      # 3000 端口在公网上根本不存在，点开只会是白屏错误页。
+      # 这两个变量与服务端 server/src/gateway.ts 一一对应（留空则退回纯端口直连）。
+      - GATEWAY_PREFIX=/app/piggybank-app
+      - GATEWAY_SOCKET=/app/gateway/app.sock
+    volumes:
+      # 飞牛注入的应用数据目录（升级不丢），容器内固定 /app/data
+      - ${TRIM_PKGVAR}/data:/app/data
+      # 应用安装目录（TRIM_APPDEST）。官方规范要求 gatewaySocket 落在应用自己的
+      # target 目录下，所以把整个安装目录挂进来，由服务端在其中创建 app.sock，
+      # 再做纯 TCP 透传到 3000（HTTP 与 WebSocket 一并搞定）。
+      # 末尾的 :- 默认值只是兜底：万一飞牛没导出该变量，也能落到标准安装位置，
+      # 不至于因为一个空挂载路径导致容器起不来。
+      - ${TRIM_APPDEST:-/vol1/@appcenter/com.piggybank.app}:/app/gateway

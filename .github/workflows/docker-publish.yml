@@ -1,0 +1,111 @@
+name: Publish image to GHCR
+
+# 为什么用 Actions 而不是本地 docker push：
+# 本机/NAS 上的 token 都只有 repo / gist / workflow 权限，缺 write:packages，
+# 推 GHCR 会被拒（permission_denied: does not match expected scopes）。
+# Actions 运行时自带的 GITHUB_TOKEN 天然具备 packages: write，因此把构建搬到 CI。
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      image_name:
+        description: "目标包名（留空用默认 piggy-bank-app）"
+        required: false
+        default: ""
+
+# 关键：显式授予写包权限，否则 GITHUB_TOKEN 默认只有 read
+permissions:
+  contents: read
+  packages: write
+
+# 包名为什么不是 piggy-bank：
+# 旧的 ghcr.io/ash-c776/piggy-bank 是用个人令牌从 NAS 推上去的，没有和本仓库
+# 建立关联，Actions 的 GITHUB_TOKEN 用同一个名字推会被拒
+#   denied: permission_denied: write_package
+# （token 本身拿得到 pull,push 授权，是 GHCR 的包级 ACL 挡下的）。
+# 换成一个全新的包名，由 Actions 首次创建时自动关联到本仓库，即可写入。
+# 旧包 1.3.3 仍在，只是无人再更新。
+env:
+  DEFAULT_IMAGE: piggy-bank-app
+
+concurrency:
+  group: docker-publish-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 版本号唯一来源 = fpk manifest，避免 workflow 里的版本与发布包漂移
+      - name: Read version from fpk manifest
+        id: ver
+        run: |
+          set -e
+          V=$(grep -m1 '^version=' deploy/fpk/com.piggybank.app/manifest | cut -d= -f2 | tr -d '\r\n')
+          if [ -z "$V" ]; then echo "manifest 里没读到 version"; exit 1; fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "即将发布版本：$V"
+
+      # GHCR 的镜像路径必须全小写，而仓库属主是 ASH-C776
+      - name: Lowercase owner
+        id: owner
+        run: echo "name=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      # 包名：默认取 workflow 级 env，手动触发时可用输入覆盖
+      - name: Resolve image name
+        id: img
+        run: |
+          NAME="${{ github.event.inputs.image_name }}"
+          [ -z "$NAME" ] && NAME="$DEFAULT_IMAGE"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "包名：$NAME"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      # Dockerfile 刻意复用预构建的 web/dist（不在镜像里编译前端），
+      # 而这几个产物不入库，所以必须在这里先构建出来
+      - name: Build web (prebuilt dist for image)
+        run: npm run build --workspace web
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64
+          # 把版本号烧进镜像：服务端「关于」页的「当前版本」直接读它，
+          # 不再依赖人工同步 compose/environment（漏一步就会显示错版本）
+          build-args: |
+            APP_VERSION=${{ steps.ver.outputs.version }}
+          tags: |
+            ghcr.io/${{ steps.owner.outputs.name }}/${{ steps.img.outputs.name }}:${{ steps.ver.outputs.version }}
+            ghcr.io/${{ steps.owner.outputs.name }}/${{ steps.img.outputs.name }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Summary
+        run: |
+          {
+            echo "### 镜像已发布"
+            echo ""
+            echo "- \`ghcr.io/${{ steps.owner.outputs.name }}/${{ steps.img.outputs.name }}:${{ steps.ver.outputs.version }}\`"
+            echo "- \`ghcr.io/${{ steps.owner.outputs.name }}/${{ steps.img.outputs.name }}:latest\`"
+          } >> "$GITHUB_STEP_SUMMARY"
