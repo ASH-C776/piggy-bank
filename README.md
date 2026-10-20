@@ -42,6 +42,21 @@
 
 ---
 
+## 界面预览
+
+<p align="center">
+  <img src="docs/screenshots/01-tasks.jpg" width="260" alt="任务发布">
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/02-shop.jpg" width="260" alt="积分商城">
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/03-growth.jpg" width="260" alt="成长曲线">
+</p>
+<p align="center">
+  <sub>任务发布 · 积分商城 · 成长曲线（对照中国儿童生长标准）</sub>
+</p>
+
+---
+
 ## 技术栈
 
 | 层 | 技术 |
