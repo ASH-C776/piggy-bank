@@ -12,7 +12,7 @@ services:
   piggy-bank:
     # 1.5.1 镜像由 GitHub Actions 在 push main 后自动构建推送；
     # 本地出 fpk 骨架时该 tag 尚未存在，安装前需确认镜像已发布（否则拉取失败）。
-    image: ghcr.io/ash-c776/piggy-bank-app:1.5.3
+    image: ghcr.io/ash-c776/piggy-bank-app:1.5.5
     container_name: piggy-bank
     restart: unless-stopped
     # 保留端口直连：局域网（含 APK 填内网 IP）走这条路，最直接也最快。
@@ -37,6 +37,13 @@ services:
       # 这两个变量与服务端 server/src/gateway.ts 一一对应（留空则退回纯端口直连）。
       - GATEWAY_PREFIX=/app/piggybank-app
       - GATEWAY_SOCKET=/app/gateway/app.sock
+      # ── 实际安装版本（覆盖镜像里的构建期版本）──────────────────────────
+      # 镜像的 APP_VERSION 是 CI 构建时烙进去的，同一个镜像会被多个 fpk 版本复用
+      # （例如只改入口配置、代码没变时，新 fpk 仍指向旧镜像），
+      # 于是「关于」页显示的版本会小于实际安装版本，导致永远提示「有更新」。
+      # 这里用包内 manifest 的版本号覆盖它，保证显示的版本 == 用户装的包。
+      # 非 fnOS 的 Docker 部署没有这个变量，仍走 APP_VERSION。
+      - APP_INSTALLED_VERSION=${APP_VERSION:-1.5.5}
     volumes:
       # 飞牛注入的应用数据目录（升级不丢），容器内固定 /app/data
       - ${TRIM_PKGVAR}/data:/app/data

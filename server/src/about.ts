@@ -46,8 +46,20 @@ export function parseManifestChangelog(text: string): string | null {
   return m ? m[1].trim() : null;
 }
 
-/** 当前实例版本：env > manifest 文件 > dev */
+/** 当前实例版本：env > manifest 文件 > dev
+ *
+ *  ⚠️ 两个版本号的来源完全不同，必须讲清楚（2026-10-20 用户困惑过一次）：
+ * - `APP_VERSION`：**镜像构建时**由 CI 从 manifest 注入，烙在镜像里。同一个镜像可以被
+ *   多个 fpk 版本复用（例如 fpk 1.5.4 只改了入口配置、代码没变，就仍用 1.5.3 的镜像），
+ *   此时它会**小于**实际安装的 fpk 版本。
+ * - `APP_INSTALLED_VERSION`：**安装时**由 fpk 的 docker-compose 注入，取自包内 manifest，
+ *   永远等于用户实际装的版本。fnOS 环境用它覆盖 APP_VERSION；
+ *   非 fnOS（Docker/源码）没有这个变量，于是仍用 APP_VERSION。
+ * 优先级：APP_INSTALLED_VERSION > APP_VERSION > manifest 文件 > dev。
+ */
 export function currentVersion(): string {
+  const installed = process.env.APP_INSTALLED_VERSION?.trim();
+  if (installed) return installed;
   const fromEnv = process.env.APP_VERSION?.trim();
   if (fromEnv) return fromEnv;
   try {
@@ -88,6 +100,25 @@ async function fetchText(url: string, headers: Record<string, string> = {}): Pro
   }
 }
 
+const jsdelivrUrl = () => `https://cdn.jsdelivr.net/gh/ASH-C776/piggy-bank@main/${MANIFEST_REL}`;
+/** GitHub API contents（raw 形态，免 base64 解码）；User-Agent 必带，否则 403 */
+const githubUrl = () => `https://api.github.com/repos/ASH-C776/piggy-bank/contents/${MANIFEST_REL}`;
+
+/** 单个更新源：取回 manifest 并解析，失败一律返回 null（由调用方决定兜底） */
+async function tryFetch(
+  url: string,
+  headers: Record<string, string> = {}
+): Promise<{ version: string; changelog: string | null } | null> {
+  try {
+    const text = await fetchText(url, headers);
+    const version = parseManifestVersion(text);
+    if (!version) return null;
+    return { version, changelog: parseManifestChangelog(text) };
+  } catch {
+    return null;
+  }
+}
+
 async function fetchLatestVersion(): Promise<{
   version: string;
   changelog: string | null;
@@ -95,28 +126,27 @@ async function fetchLatestVersion(): Promise<{
 }> {
   const errors: string[] = [];
 
-  // 1) jsDelivr：国内 NAS/手机网络下最稳的一条
-  try {
-    const text = await fetchText(`https://cdn.jsdelivr.net/gh/ASH-C776/piggy-bank@main/${MANIFEST_REL}`);
-    const v = parseManifestVersion(text);
-    if (v) return { version: v, changelog: parseManifestChangelog(text), source: 'jsdelivr' };
-    errors.push('jsdelivr 未返回版本号');
-  } catch (e) {
-    errors.push(`jsdelivr: ${(e as Error).message}`);
+  // 1) jsDelivr：国内 NAS/手机网络下最稳的一条，但**分支文件缓存滞后可达约 12 小时**
+  //    （2026-10-20 实测：main 已是 1.5.4，jsDelivr 仍返回 1.5.2）。
+  //    所以它只能当**兜底**：拿到版本后要跟 GitHub 实时源比对，取更新的那个。
+  const jsdelivr = await tryFetch(jsdelivrUrl());
+  if (jsdelivr?.version) {
+    const gh = await tryFetch(githubUrl());
+    if (gh?.version && isNewer(gh.version, jsdelivr.version)) {
+      return { version: gh.version, changelog: gh.changelog, source: 'github' };
+    }
+    return { version: jsdelivr.version, changelog: jsdelivr.changelog, source: 'jsdelivr' };
   }
 
-  // 2) GitHub API：raw 直取，免 base64 解码；User-Agent 必带，否则 403
-  try {
-    const text = await fetchText(
-      `https://api.github.com/repos/ASH-C776/piggy-bank/contents/${MANIFEST_REL}`,
-      { Accept: 'application/vnd.github.raw', 'User-Agent': 'piggy-bank-about' }
-    );
-    const v = parseManifestVersion(text);
-    if (v) return { version: v, changelog: parseManifestChangelog(text), source: 'github' };
-    errors.push('github 未返回版本号');
-  } catch (e) {
-    errors.push(`github: ${(e as Error).message}`);
+  // 2) GitHub API：实时，但国内可能被墙、且匿名限流 60 次/小时
+  const gh = await tryFetch(githubUrl(), {
+    Accept: 'application/vnd.github.raw',
+    'User-Agent': 'piggy-bank-about',
+  });
+  if (gh?.version) {
+    return { version: gh.version, changelog: gh.changelog, source: 'github' };
   }
+  errors.push('jsDelivr 与 GitHub 均未返回版本号');
 
   throw new Error('暂时连不上更新源，请稍后再试');
 }
