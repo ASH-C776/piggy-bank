@@ -8,6 +8,8 @@ import { api } from '@/api/client';
 import ZodiacAvatar from '@/components/ZodiacAvatar.vue';
 import NavIcon, { type NavIconName } from '@/components/NavIcon.vue';
 import ChildSettingsModal from '@/components/ChildSettingsModal.vue';
+import AboutModal from '@/components/AboutModal.vue';
+import { getAbout, type AboutInfo } from '@/api/about';
 
 const auth = useAuthStore();
 const toast = useToastStore();
@@ -31,7 +33,17 @@ function isActive(to: string): boolean {
 
 const menuOpen = ref(false);
 const settingsOpen = ref(false);
+const aboutOpen = ref(false);
 const hasNewTask = ref(false);
+
+/** 「关于」行右侧角标：有新版本显示「有更新」，否则显示版本号。失败保持 null（不显示角标）。 */
+const aboutInfo = ref<AboutInfo | null>(null);
+
+async function loadAboutBadge() {
+  try {
+    aboutInfo.value = await getAbout();
+  } catch {}
+}
 
 async function checkNewTasks() {
   try {
@@ -77,6 +89,14 @@ function openSettings() {
   closeMenu();
   settingsOpen.value = true;
 }
+/**
+ * 「关于与检查更新」提到头像菜单（退出按钮前）—— 与 parent/Layout.vue 保持一致，
+ * 孩子也能在菜单里直接看到版本号，不用来回翻设置。
+ */
+function openAbout() {
+  closeMenu();
+  aboutOpen.value = true;
+}
 function logout() {
   closeMenu();
   ws.disconnect();
@@ -101,6 +121,7 @@ onMounted(async () => {
     ws.connect();
     await checkNewTasks();
   } catch {}
+  loadAboutBadge();
   window.addEventListener('ws:task_review', onWsEvent);
 });
 
@@ -148,6 +169,13 @@ const logoUrl = './piggy-bank.png';
               <span class="mi-icon"><NavIcon name="settings" /></span>
               <span>设置</span>
             </button>
+            <button class="menu-item" @click="openAbout">
+              <span class="mi-icon"><NavIcon name="about" /></span>
+              <span class="mi-label">关于与检查更新</span>
+              <span v-if="aboutInfo?.updateAvailable" class="mi-badge is-new">有更新</span>
+              <span v-else-if="aboutInfo" class="mi-badge">v{{ aboutInfo.version }}</span>
+            </button>
+            <div class="menu-divider"></div>
             <button class="menu-item danger" @click="logout">
               <span class="mi-icon"><NavIcon name="logout" /></span>
               <span>退出登录</span>
@@ -178,6 +206,7 @@ const logoUrl = './piggy-bank.png';
     </nav>
 
     <ChildSettingsModal v-model="settingsOpen" />
+    <AboutModal v-model="aboutOpen" />
   </div>
 </template>
 
@@ -313,6 +342,35 @@ const logoUrl = './piggy-bank.png';
 }
 .menu-item.danger .mi-icon {
   color: var(--text-on-red);
+}
+/* 与 parent/Layout.vue 同处说明：mi-label 吃掉剩余宽度把角标顶到行尾，
+   min-width:0 保证窄屏下文案走省略号而不是撑破菜单。 */
+.mi-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mi-badge {
+  flex: none;
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+  padding: 0 var(--space-6);
+  border-radius: var(--r-sm);
+  background: var(--glass-bg);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.mi-badge.is-new {
+  background: var(--accent-orange);
+  color: var(--text-on-orange);
+  font-weight: 600;
+}
+.menu-divider {
+  height: 1px;
+  background: var(--glass-border);
+  margin: var(--space-4) 0;
 }
 
 .menu-pop-enter-active,

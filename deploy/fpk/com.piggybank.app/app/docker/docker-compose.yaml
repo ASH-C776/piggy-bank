@@ -12,7 +12,7 @@ services:
   piggy-bank:
     # 1.5.1 镜像由 GitHub Actions 在 push main 后自动构建推送；
     # 本地出 fpk 骨架时该 tag 尚未存在，安装前需确认镜像已发布（否则拉取失败）。
-    image: ghcr.io/ash-c776/piggy-bank-app:1.5.2
+    image: ghcr.io/ash-c776/piggy-bank-app:1.5.3
     container_name: piggy-bank
     restart: unless-stopped
     # 保留端口直连：局域网（含 APK 填内网 IP）走这条路，最直接也最快。

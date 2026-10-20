@@ -4,8 +4,6 @@ import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
 import Modal from '@/components/Modal.vue';
 import ZodiacAvatar from '@/components/ZodiacAvatar.vue';
-import AboutModal from '@/components/AboutModal.vue';
-import { getAbout, type AboutInfo } from '@/api/about';
 import { ZODIACS } from '@/utils/zodiac';
 
 const props = defineProps<{ modelValue: boolean }>();
@@ -21,23 +19,13 @@ const password = ref('');
 const avatar = ref('dragon');
 const saving = ref(false);
 
-// 「关于」二级弹窗 + 入口行上的更新角标。
-// 每次打开设置拉一次 /api/about：服务端带 30 分钟 TTL 缓存，
-// 不会因为反复开关设置而反复请求外网；失败就静默（角标不显示，不影响设置本身）。
-const aboutOpen = ref(false);
-const aboutInfo = ref<AboutInfo | null>(null);
-
+// 「关于与检查更新」原本挂在设置底部，现已提到头像下拉菜单里（退出按钮前），
+// 版本号和更新角标在菜单行就能看到，不必翻进二级弹窗。
 watch(() => props.modelValue, (open) => {
   if (open) {
     name.value = auth.user?.name ?? '';
     password.value = '';
     avatar.value = auth.user?.avatar ?? 'dragon';
-    getAbout()
-      .then((d) => (aboutInfo.value = d))
-      .catch(() => {});
-  } else {
-    // 设置关掉时，「关于」跟着关——否则会剩一个孤岛弹窗
-    aboutOpen.value = false;
   }
 });
 
@@ -118,16 +106,6 @@ async function save() {
       </div>
     </div>
 
-    <!-- 「关于」入口：与设置同级的二级页。有更新时右侧显示角标，
-         点进去可见版本号 / 作者 / 仓库 / 更新说明与跳转 -->
-    <div class="about-entry" @click="aboutOpen = true">
-      <span class="ae-icon">ℹ️</span>
-      <span class="ae-label">关于</span>
-      <span v-if="aboutInfo?.updateAvailable" class="ae-badge">有更新</span>
-      <span v-else-if="aboutInfo" class="ae-version">v{{ aboutInfo.version }}</span>
-      <span class="ae-arrow">›</span>
-    </div>
-
     <template #footer>
       <span style="flex:1"></span>
       <button class="btn btn-ghost" @click="emit('update:modelValue', false)">取消</button>
@@ -136,9 +114,6 @@ async function save() {
       </button>
     </template>
   </Modal>
-
-  <!-- 嵌套弹窗：Modal  Teleport 到 body 且 useDialog 用栈保证只有最上层响应 Esc/焦点 -->
-  <AboutModal v-model="aboutOpen" />
 </template>
 
 <style scoped>
@@ -189,51 +164,5 @@ async function save() {
 .zname {
   font-size: var(--fs-2xs);
   color: var(--text-secondary);
-}
-
-/* 「关于」入口行：菜单行形态，与头像下拉菜单同语言 */
-.about-entry {
-  display: flex;
-  align-items: center;
-  gap: var(--space-10);
-  width: 100%;
-  margin-top: var(--space-18);
-  padding: var(--space-10) var(--space-12);
-  border-radius: var(--r-md);
-  border-top: 1px solid var(--glass-border);
-  background: transparent;
-  font-size: var(--fs-sm);
-  color: var(--text-primary);
-  text-align: left;
-  cursor: pointer;
-  transition: background var(--dur-fast);
-}
-.about-entry:hover {
-  background: var(--glass-bg);
-}
-.ae-icon {
-  font-size: var(--fs-md);
-}
-.ae-label {
-  flex: 1;
-}
-.ae-version {
-  font-size: var(--fs-xs);
-  color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
-}
-/* 有更新角标：装饰色做底、白字（徽章属图形+短文本，白字压 3.44:1，
-   与审核入口数字角标同一取舍，已在主题里登记过） */
-.ae-badge {
-  font-size: var(--fs-2xs);
-  font-weight: 700;
-  padding: 2px var(--space-10);
-  border-radius: var(--r-pill);
-  background: var(--accent-orange-red);
-  color: #fff;
-}
-.ae-arrow {
-  color: var(--text-muted);
-  font-size: var(--fs-lg);
 }
 </style>

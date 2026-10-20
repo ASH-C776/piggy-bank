@@ -12,10 +12,11 @@ export type NavIconName =
   | 'growth'
   | 'shop'
   | 'review'
-  // 头像菜单用的三个功能图标（两端 Layout 的 .mi-icon），和底部导航同一套画法，
+  // 头像菜单用的功能图标（两端 Layout 的 .mi-icon），和底部导航同一套画法，
   // 替换掉原来的 ⚙️/💾/👋 emoji —— emoji 各系统长相不一且改不动颜色。
   | 'settings'
   | 'backup'
+  | 'about'
   | 'logout';
 </script>
 
@@ -114,6 +115,13 @@ defineProps<{ name: NavIconName }>();
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
       <path d="m16 17 5-5-5-5" />
       <path d="M21 12H9" />
+    </template>
+
+    <!-- 关于：圆圈里的 i（信息） -->
+    <template v-else-if="name === 'about'">
+      <circle cx="12" cy="12" r="8.7" />
+      <path d="M12 11.2v5" />
+      <path d="M12 7.9h.01" />
     </template>
   </svg>
 </template>

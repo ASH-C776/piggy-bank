@@ -12,6 +12,8 @@ import ReviewPanel from '@/components/ReviewPanel.vue';
 import Modal from '@/components/Modal.vue';
 import SettingsModal from '@/components/SettingsModal.vue';
 import BackupModal from '@/components/BackupModal.vue';
+import AboutModal from '@/components/AboutModal.vue';
+import { getAbout, type AboutInfo } from '@/api/about';
 
 const auth = useAuthStore();
 const toast = useToastStore();
@@ -34,8 +36,19 @@ const navItems: { to: string; label: string; icon: NavIconName }[] = [
 const menuOpen = ref(false);
 const settingsOpen = ref(false);
 const backupOpen = ref(false);
+const aboutOpen = ref(false);
 const reviewOpen = ref(false);
 const pendingReviewCount = ref(0);
+
+/** 头像菜单「关于」行右侧的角标：有新版本显示「有更新」，否则显示当前版本号。
+ *  拉取失败就保持null —— 角标不显示，但不影响菜单其余功能。 */
+const aboutInfo = ref<AboutInfo | null>(null);
+
+async function loadAboutBadge() {
+  try {
+    aboutInfo.value = await getAbout();
+  } catch {}
+}
 
 // logo 用运行时相对路径而非 '/piggy-bank.png'：飞牛网关前缀
 // （/app/com.piggybank.app/）下绝对路径会打到飞牛站点根目录而 404。
@@ -93,6 +106,16 @@ function openBackup() {
   backupOpen.value = true;
 }
 
+/**
+ * 「关于与检查更新」入口提到头像菜单里（退出按钮前），不再藏在设置里 ——
+ * 版本号和「有更新」是用户会主动关心的信息，埋进二级页等于没有。
+ * 角标数据在挂载时拉一次：服务端 /api/about 有 30 分钟 TTL 缓存，不会反复打外网。
+ */
+function openAbout() {
+  closeMenu();
+  aboutOpen.value = true;
+}
+
 function logout() {
   closeMenu();
   ws.disconnect();
@@ -117,6 +140,7 @@ onMounted(async () => {
     ws.connect();
     await loadPendingCount();
   } catch {}
+  loadAboutBadge();
   // 监听 ws 事件刷新计数
   window.addEventListener('ws:new_exchange_request', loadPendingCount);
   window.addEventListener('ws:exchange_reviewed', loadPendingCount);
@@ -175,6 +199,12 @@ onUnmounted(() => {
               <span class="mi-icon"><NavIcon name="backup" /></span>
               <span>备份与恢复</span>
             </button>
+            <button class="menu-item" @click="openAbout">
+              <span class="mi-icon"><NavIcon name="about" /></span>
+              <span class="mi-label">关于与检查更新</span>
+              <span v-if="aboutInfo?.updateAvailable" class="mi-badge is-new">有更新</span>
+              <span v-else-if="aboutInfo" class="mi-badge">v{{ aboutInfo.version }}</span>
+            </button>
             <div class="menu-divider"></div>
             <button class="menu-item danger" @click="logout">
               <span class="mi-icon"><NavIcon name="logout" /></span>
@@ -219,6 +249,7 @@ onUnmounted(() => {
 
     <SettingsModal v-model="settingsOpen" />
     <BackupModal v-model="backupOpen" />
+    <AboutModal v-model="aboutOpen" />
   </div>
 </template>
 
@@ -372,6 +403,31 @@ onUnmounted(() => {
 }
 .menu-item.danger .mi-icon {
   color: var(--text-on-red);
+}
+/* 「关于」行的文案 + 右侧版本角标。
+   mi-label 用 flex:1 把角标顶到行尾；不加 min-width:0 的话
+   「关于与检查更新」在窄屏会被挤到换行而不是省略号。 */
+.mi-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mi-badge {
+  flex: none;
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+  padding: 0 var(--space-6);
+  border-radius: var(--r-sm);
+  background: var(--glass-bg);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.mi-badge.is-new {
+  background: var(--accent-orange);
+  color: var(--text-on-orange);
+  font-weight: 600;
 }
 .menu-divider {
   height: 1px;
