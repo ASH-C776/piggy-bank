@@ -14,12 +14,9 @@
       "categories": ["教育学习", "生活服务"],
       "icon_url": "./piggy-bank/ICON.PNG",
       "preview_urls": [
-        "./piggy-bank/Preview/01-child-shop.jpg",
-        "./piggy-bank/Preview/02-child-home.jpg",
-        "./piggy-bank/Preview/03-preview.jpg",
-        "./piggy-bank/Preview/04-preview.jpg",
-        "./piggy-bank/Preview/05-preview.jpg",
-        "./piggy-bank/Preview/06-preview.jpg"
+        "./piggy-bank/Preview/01-tasks.jpg",
+        "./piggy-bank/Preview/02-shop.jpg",
+        "./piggy-bank/Preview/03-growth.jpg"
       ],
       "readme_url": "./piggy-bank/README.md",
       "bug_report_url": "https://github.com/ASH-C776/piggy-bank/issues",

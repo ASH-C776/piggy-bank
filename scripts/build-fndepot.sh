@@ -141,6 +141,35 @@ cp "$SRC_FPK_DIR/com.piggybank.app.fpk" "$OUT/$APP_NAME/$APP_NAME.fpk"
 cp "$SRC_FPK_DIR/ICON_256.PNG"          "$OUT/$APP_NAME/ICON.PNG"
 cp "$SRC_SHOTS/"*.jpg                   "$OUT/$APP_NAME/Preview/"
 
+# --- 一致性自检：JSON 里引用的每个 URL 都必须真实存在 ----------------------
+# 历史坑：模板 preview_urls 还引着已删除的旧截图名（01-child-shop.jpg 等），
+# 商店端会拿到 404 的预览图。故生成后逐条核对，宁可在构建期就失败。
+PYTHONUTF8=1 PYTHONIOENCODING=utf-8 python - "$OUT" <<'PYEOF'
+import json, os, sys
+out = sys.argv[1]
+j = json.load(open(os.path.join(out, 'fnpack.json'), encoding='utf-8'))
+bad = []
+for appname, app in j.get('apps', {}).items():
+    for key, url in (('icon_url', app.get('icon_url')), ('readme_url', app.get('readme_url'))):
+        if url and url.startswith('./'):
+            if not os.path.isfile(os.path.join(out, url[2:])):
+                bad.append(f'{appname}.{key} -> {url}')
+    for i, url in enumerate(app.get('preview_urls', [])):
+        if url.startswith('./') and not os.path.isfile(os.path.join(out, url[2:])):
+            bad.append(f'{appname}.preview_urls[{i}] -> {url}')
+    for ver, rel in app.get('releases', {}).items():
+        for arch, pkg in rel.get('packages', {}).items():
+            u = pkg.get('download_url', '')
+            if u.startswith('./') and not os.path.isfile(os.path.join(out, u[2:])):
+                bad.append(f'{appname}@{ver}/{arch} download_url -> {u}')
+if bad:
+    print("[FAIL] fnpack.json 引用的资源不存在：")
+    for b in bad: print("   -", b)
+    sys.exit(1)
+print("✓ 资源引用自检通过（icon / readme / previews / fpk 均存在）")
+PYEOF
+[ $? -eq 0 ] || fail "资源引用自检未通过"
+
 echo "✓ 已生成 FnDepot 源仓库目录（V2）：$OUT"
 echo "  镜像      : $(echo "$IMAGE_LINE" | sed 's/^ *//')"
 echo "  文件清单  :"
