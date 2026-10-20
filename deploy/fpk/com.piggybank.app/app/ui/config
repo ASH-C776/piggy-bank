@@ -3,7 +3,7 @@
     "com.piggybank.app.main": {
       "title": "存钱罐",
       "icon": "images/icon_{0}.png",
-      "type": "url",
+      "type": "iframe",
       "protocol": "",
       "gatewayPrefix": "/app/piggybank-app",
       "gatewaySocket": "app.sock",
