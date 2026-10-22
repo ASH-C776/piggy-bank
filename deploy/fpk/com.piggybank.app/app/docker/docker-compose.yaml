@@ -30,12 +30,14 @@ services:
       - JWT_SECRET=${JWT_SECRET:-please-change-this-secret-in-production}
       # ── 飞牛统一网关 ────────────────────────────────────────────────────
       # app/ui/config 里声明了 gatewayPrefix/gatewaySocket，飞牛会把
-      # /app/piggybank-app/** 的请求（含 WebSocket）校验登录态后转发到下面这个 socket。
+      # /app/com-piggybank-app/** 的请求（含 WebSocket）校验登录态后转发到下面这个 socket。
+      # ⚠️ 前缀必须等于 appname 的「点转横线」形式（com.piggybank.app → com-piggybank-app）。
+      # 早前写成 /app/piggybank-app（漏了 com-）导致网关查不到路由，点图标永远「Not Found」。
       # 有了它，同一个桌面图标在局域网、FN Connect 外网、域名访问下都能打开；
       # 而「端口直连」模式在远程时页面是 HTTPS、主机名是飞牛中转域名，
       # 3000 端口在公网上根本不存在，点开只会是白屏错误页。
       # 这两个变量与服务端 server/src/gateway.ts 一一对应（留空则退回纯端口直连）。
-      - GATEWAY_PREFIX=/app/piggybank-app
+      - GATEWAY_PREFIX=/app/com-piggybank-app
       - GATEWAY_SOCKET=/app/gateway/app.sock
       # ── 实际安装版本（覆盖镜像里的构建期版本）──────────────────────────
       # 镜像的 APP_VERSION 是 CI 构建时烙进去的，同一个镜像会被多个 fpk 版本复用

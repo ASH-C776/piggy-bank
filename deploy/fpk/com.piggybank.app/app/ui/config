@@ -5,9 +5,9 @@
       "icon": "images/icon_{0}.png",
       "type": "iframe",
       "protocol": "",
-      "gatewayPrefix": "/app/piggybank-app",
+      "gatewayPrefix": "/app/com-piggybank-app",
       "gatewaySocket": "app.sock",
-      "url": "/app/piggybank-app/",
+      "url": "/app/com-piggybank-app/",
       "allUsers": true,
       "control": {
         "accessPerm": "editable"
